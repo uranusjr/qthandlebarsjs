@@ -17,7 +17,7 @@ QJSValue listHelper(QJSValue context, QJSValue options)
 }
 
 
-HomepageTest::HomepageTest() : QObject(), hb(nullptr)
+HomepageTest::HomepageTest(QObject *parent) : QObject(parent), hb(nullptr)
 {
 }
 

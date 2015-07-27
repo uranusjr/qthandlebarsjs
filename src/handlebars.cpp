@@ -5,6 +5,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QMetaProperty>
 #include <QRegularExpression>
 #include <QUrl>
 #include <QUuid>
@@ -41,6 +42,11 @@ public:
     HandlebarsPrivate(Handlebars *q);
 
     QString render(const QString &source, const QJSValue &context);
+
+    // Handlebars.js could not handle wrapped pointers, so we need to
+    // serialize it going in. Sad.
+    QJSValue buildValue(QObject *object);
+    QJSValue buildValue(void *object, int userType);
 
     QJSValue buildValue(const QJsonDocument &document);
     QJSValue buildValue(const QJsonArray &array);
@@ -80,6 +86,18 @@ QString HandlebarsPrivate::render(
                 "Handlebars.compile(_templateSource)(_context);");
     QString result = value.toString();
     return result;
+}
+
+QJSValue HandlebarsPrivate::buildValue(QObject *object)
+{
+    QJSValue value = engine->newObject();
+    const QMetaObject *meta = object->metaObject();
+    for (int i = 0; i < meta->propertyCount(); i++)
+    {
+        QMetaProperty property = meta->property(i);
+        value.setProperty(property.name(), buildValue(property.read(object)));
+    }
+    return value;
 }
 
 QJSValue HandlebarsPrivate::buildValue(const QJsonDocument &document)
@@ -168,7 +186,9 @@ QJSValue HandlebarsPrivate::buildValue(const QVariantMap &map)
 QJSValue HandlebarsPrivate::buildValue(const QVariant &variant)
 {
     QJSValue value(QJSValue::UndefinedValue);
-    switch (variant.userType())
+
+    int userType = variant.userType();
+    switch (userType)
     {
     case QMetaType::QBitArray:
         value = uintfbits(variant.toBitArray());
@@ -226,6 +246,9 @@ QJSValue HandlebarsPrivate::buildValue(const QVariant &variant)
     case QMetaType::QUuid:
         value = variant.toUuid().toString();
         break;
+    case QMetaType::QObjectStar:
+        value = buildValue(variant.value<QObject *>());
+        break;
 
     // Newer stuff.
     case QMetaType::QRegularExpression:
@@ -259,22 +282,16 @@ QJSValue HandlebarsPrivate::buildValue(const QVariant &variant)
         value = buildValue(variant.toMap());
         break;
 
-    // Unconvertable types.
-    case QMetaType::QEasingCurve:
-    case QMetaType::QLine:
-    case QMetaType::QLineF:
-    case QMetaType::QLocale:
-    case QMetaType::QModelIndex:
-#if QT_VERSION >= QT_VERSION_CHECK(5, 5, 0)
-    case QMetaType::QPersistentModelIndex:
-#endif
-    case QMetaType::QPoint:
-    case QMetaType::QPointF:
-    case QMetaType::QRect:
-    case QMetaType::QRectF:
-    case QMetaType::QSize:
-    case QMetaType::QSizeF:
-    case QMetaType::QTime:
+    default:
+        if (userType >= QMetaType::User && variant.canConvert<QObject *>())
+        {
+            {
+                value = buildValue(variant.value<QObject *>());
+                break;
+            }
+        }
+        // TODO: Better error message.
+        qWarning("Could not convert value of type %d", userType);
         break;
     }
     return value;

@@ -12,7 +12,7 @@ class HomepageTest : public QObject
     Q_OBJECT
 
 public:
-    HomepageTest();
+    explicit HomepageTest(QObject *parent = 0);
 
 private slots:
     void init();

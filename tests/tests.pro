@@ -15,7 +15,9 @@ INCLUDEPATH += $$PWD/../src
 
 SOURCES += \
     test_main.cpp \
-    homepagetest.cpp
+    homepagetest.cpp \
+    customtest.cpp
 
 HEADERS += \
-    homepagetest.h
+    homepagetest.h \
+    customtest.h

@@ -1,4 +1,5 @@
 #include <QCoreApplication>
+#include "customtest.h"
 #include "homepagetest.h"
 
 #define RUN(klass, argc, argv) \
@@ -15,6 +16,7 @@ int main(int argc, char *argv[])
 
     int status = 0;
     RUN(HomepageTest, argc, argv)
+    RUN(CustomTest, argc, argv)
     return status;
 }
 
