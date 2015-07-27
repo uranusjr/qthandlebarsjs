@@ -265,7 +265,9 @@ QJSValue HandlebarsPrivate::buildValue(const QVariant &variant)
     case QMetaType::QLineF:
     case QMetaType::QLocale:
     case QMetaType::QModelIndex:
+#if QT_VERSION >= QT_VERSION_CHECK(5, 5, 0)
     case QMetaType::QPersistentModelIndex:
+#endif
     case QMetaType::QPoint:
     case QMetaType::QPointF:
     case QMetaType::QRect:
