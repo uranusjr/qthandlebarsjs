@@ -317,8 +317,11 @@ void Handlebars::registerHelper(const QString &name, HelperFunction helper)
 
 void Handlebars::unregisterHelper(const QString &name)
 {
+    static QString codeTemplate = "Handlebars.unregisterHelper('%1');";
+
     Q_D(Handlebars);
     d->manager->removeHelper(name);
+    d->engine->evaluate(codeTemplate.arg(name));
 }
 
 QString Handlebars::render(const QString &source, const QJsonObject &context)
