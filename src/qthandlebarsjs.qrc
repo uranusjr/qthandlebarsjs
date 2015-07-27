@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/qthandlebarsjs">
+        <file>handlebars-v3.0.3.js</file>
+    </qresource>
+</RCC>
