@@ -67,7 +67,7 @@ HandlebarsPrivate::HandlebarsPrivate(Handlebars *q) :
 {
     QFile f(HANDLEBARS_PATH);
     bool ok = f.open(QFile::ReadOnly | QFile::Text);
-    Q_ASSERT(ok);
+    Q_ASSERT(ok); Q_UNUSED(ok);
     QJSValue retval = engine->evaluate(f.readAll(), HANDLEBARS_PATH);
     Q_ASSERT(!retval.isError());
 
